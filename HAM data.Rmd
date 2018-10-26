@@ -1,0 +1,39 @@
+---
+title: "HAM Data"
+author: "Hannah Hardenbergh"
+date: "October 19, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(httr)
+library(tidyverse)
+library(jsonlite)
+library(rjson)
+```
+
+```{r}
+data <- GET("https://api.harvardartmuseums.org/activity?apikey=cc45bad0-d179-11e8-9ca0-7d54f59b2678",
+            query = list(search = "moves"))
+
+data$status_code
+data$headers$`content-type`
+names(data)
+
+text_content <- content(data, as = "text", encoding = "UTF-8")
+text_content
+
+json_content <- text_content %>% fromJSON()
+json_content
+ham_data <- json_content$results
+names(ham_data)
+```
+
+```{r}
+str(data, max.level = 1)
+
+GET("https://api.harvardartmuseums.org/activity?apikey=cc45bad0-d179-11e8-9ca0-7d54f59b2678")
+
+```
+
