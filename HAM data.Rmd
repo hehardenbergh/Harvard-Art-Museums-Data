@@ -7,27 +7,61 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
 library(httr)
 library(tidyverse)
 library(jsonlite)
-library(rjson)
+
 ```
 
 ```{r}
-data <- GET("https://api.harvardartmuseums.org/activity?apikey=cc45bad0-d179-11e8-9ca0-7d54f59b2678",
-            query = list(search = "moves"))
+# assign the api key to an object for easier referral
+myapikey <- "33fb5b60-e095-11e8-8b7a-1f4f3883b636"
+url <- "https://api.harvardartmuseums.org/"
+path <- "activity/moves"
 
-data$status_code
+#get data for moves in activity resource from API
+raw.data <- GET("https://api.harvardartmuseums.org/activity",
+                query = list(search = "moves",
+                             api_key=myapikey))
+
+#find status code
+raw.data$status_code
+
+# content(): extract the content from the query
+
+repo_raw.data <- content(raw.data) 
+
+# find the class of the data
+
+class(raw.data)
+
+# What is in the data?
+
+names(raw.data)
+
+# run status code to ensure it is 200
+
+raw.data$status_code
+
+# find the data type - it should be an application, JSON
+
 data$headers$`content-type`
-names(data)
+
+# make content of data in text format (will be messy)
 
 text_content <- content(data, as = "text", encoding = "UTF-8")
 text_content
 
+# Parse with jsonlite, turning json objects into r objects
+
 json_content <- text_content %>% fromJSON()
 json_content
-ham_data <- json_content$results
-names(ham_data)
+
+raw.data <- json_content$results
+names(raw.data)
+raw.data$activity
+
 ```
 
 ```{r}
