@@ -12,8 +12,13 @@ library(jsonlite)
 library(rjson)
 library(shiny)
 
+myapikey <- "33fb5b60-e095-11e8-8b7a-1f4f3883b636"
 
-data.2 <- read_csv("polls_IT-parliament_2018-10-01.csv")
+#get data for moves in activity resource from API
+raw.data <- GET("https://api.harvardartmuseums.org/activity",
+                query = list(search = "moves",
+                             "pageviews",
+                             api_key=myapikey))
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -47,7 +52,7 @@ server <- function(input, output) {
    
      #generate a plot that shows ...
      
-     ggplot(data.2, aes(date, firm)) + geom_line()
+     ggplot(data.2, aes(pageviews, moves)) + geom_line()
     
 })}
 
