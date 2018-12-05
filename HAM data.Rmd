@@ -56,7 +56,8 @@ tidydata <- raw %>%
          studycenterviews_2009 = as.numeric(studycenterviews_2009),
          studycenterviews_2010 = as.numeric(studycenterviews_2010),
          edits_2008 = as.numeric(edits_2008),
-         uniquepageviews_2008 = as.numeric(uniquepageviews_2008)) %>% 
+         uniquepageviews_2008 = as.numeric(uniquepageviews_2008)
+         ) %>% 
   
   # add a column containing the total times an object has moved since 2009 that
   # sums up all years. study center views indicate the number of times an object
@@ -78,18 +79,9 @@ tidydata <- raw %>%
   # times an object was visited on the museum's public website on a given day.
   # Rename them to online views.
   
-  mutate(total_pageviews = `pageviews_2009` + 
-                          `pageviews_2010` +
-                          `pageviews_2011` +
-                          `pageviews_2012` +
-                          `pageviews_2013` +
-                          `pageviews_2014` +
-                          `pageviews_2015` +
-                          `pageviews_2016` +
-                          `pageviews_2017` +
-                          `pageviews_2018`) %>%
-
-
+  # summarise(total_pageviews = sum(pageviews_2009 + pageviews_2010 + pageviews_2011 + pageviews_2012 + pageviews_2013 + pageviews_2014 + pageviews_2015 + pageviews_2016 + pageviews_2017 + pageviews_2018),
+  #           
+  #        total_studycenterviews = sum(studycenterviews_2009 + studycenterviews_2010 + studycenterviews_2011 + studycenterviews_2012 + studycenterviews_2013 + studycenterviews_2014 + studycenterviews_2015 + studycenterviews_2016 + studycenterviews_2017 + studycenterviews_2018)) %>%
 
   # make two columns for each year that distinguish types of views: those online and those "on
   # the wall" (in-person views). Note that the Art Museum API does not specify
@@ -123,17 +115,26 @@ tidydata <- raw %>%
 ```{r create plots}
 
 # make a tibble for types of moves, including 2 columns per id: online views and in-person views.
+
 movetypes <- tidydata %>% 
-  select(total_moves,
+  select(title,
+         total_moves,
          total_pageviews) %>% 
-  mutate(online_views = total_pageviews,
+  rename(online_views = total_pageviews,
          inperson_views = total_moves) %>% 
   slice(1:40)
 
+movetypes %>% 
+  kableExtra::kable()
 
+# play with plotting variables
 
 tidydata %>% 
   ggplot(aes(objectid, pageviews_2017), + geom_point())
+
+# tidydata %>% 
+#   select(moves_2009:moves_2018) %>%
+#   summarise(totalmoves = sum(moves_2009))
 
 ```
 

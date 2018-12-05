@@ -182,10 +182,9 @@ ui <- fluidPage(
                               "Books")),
       
       selectInput("viewtype2018", "Viewed Online or On the Wall in 2018?",
-                  choices = c(`Online` = "pageviews_2018",
-                              `In the Museum` = "moves_2018",
+                  choices = c(`Online` = "total_pageviews",
+                              `In the Museum` = "total_moves",
                               `4th Floor Study Center` = "studycenterviews_2018"))
-      
       
 
     ),
@@ -227,22 +226,14 @@ server <- function(input, output) {
     # })
   # })
   
-  # # Generate a summary of the data ----
-  # output$summary <- renderPrint({
-  #   
-  #   shiny_data %>% 
-  #     select(input$data) %>% 
-  #     summary()
+  
+
+  # Generate an HTML table view of the data ----
+  output$table <- renderTable({
+     subset(data, personculture = input$personculture)
+
     
-  # })
-  # 
-  # # Generate an HTML table view of the data ----
-  # output$table <- renderTable({
-  #   
-  #   shiny_data %>% 
-  #     
-  #     
-  # })
+    })
   
 }
 
