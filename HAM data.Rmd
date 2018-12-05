@@ -6,68 +6,94 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE,
+                      warning = FALSE,
+                      message = FALSE)
 
-library(httr)
+library(ggvis)
 library(tidyverse)
-library(jsonlite)
+library(tidyr)
+library(tidyselect)
+library(forcats)
+library(devtools)
 
 ```
 
 ```{r}
-# assign the api key to an object for easier referral
-myapikey <- "33fb5b60-e095-11e8-8b7a-1f4f3883b636"
-url <- "https://api.harvardartmuseums.org/"
-path <- "activity/moves"
+# Read in the data
+raw <- read_csv("data.csv")
 
-#get data for moves in activity resource from API
-raw.data <- GET("https://api.harvardartmuseums.org/activity",
-                query = list(search = "moves",
-                             api_key=myapikey))
+# We want to look at, in the final shiny app, how often items get moved and if
+# there is a correlation between the artist's ethnic background or nationality,
+# which, in this dataset, is defined as "personculture".
 
-#find status code
-raw.data$status_code
+# we can also look at the number of times an object has been viewed online,
+# given to us by the dataset that was pulled from the api. Add a total pageviews
+# variable while keeping the yearly pageviews observations intact with mutate.
+  
+# To see how often an object has moved, we need to add combine the types of
+# moves to form a total moves variable, while keeping the types of moves. to do
+# this, use mutate.
 
-# content(): extract the content from the query
+# I am ignoring 2008 values because they are 1) all NA values and I don't have
+# the data to replace the NAs with numbers, which 2) makes them a logical
+# vector. I use as.numeric() to change this below, but it didn't replace NA's
+# with values.
 
-repo_raw.data <- content(raw.data) 
+tidydata <- raw %>%
+  # replace all NA values with 0's
+  mutate_if(is.numeric , replace_na, replace = 0) %>% 
+  
+  # make a function that changes logical strings to integers
+  to_dbl <- function(x) {
+    if (is.logical(x)) {
+      mutate(x = as.numeric(x))
+    }
+  x
+  }
+  
+  # execute function for all logical strings
+  to_dbl("moves_2008")
+  to_dbl(x = conservation_2010)
 
-# find the class of the data
-
-class(raw.data)
-
-# What is in the data?
-
-names(raw.data)
-
-# run status code to ensure it is 200
-
-raw.data$status_code
-
-# find the data type - it should be an application, JSON
-
-data$headers$`content-type`
-
-# make content of data in text format (will be messy)
-
-text_content <- content(data, as = "text", encoding = "UTF-8")
-text_content
-
-# Parse with jsonlite, turning json objects into r objects
-
-json_content <- text_content %>% fromJSON()
-json_content
-
-raw.data <- json_content$results
-names(raw.data)
-raw.data$activity
-
-```
-
-```{r}
-str(data, max.level = 1)
-
-GET("https://api.harvardartmuseums.org/activity?apikey=cc45bad0-d179-11e8-9ca0-7d54f59b2678")
-
+  
+mutate(moves_2008 = as.numeric(moves_2008)) %>% 
+  # add a column containing the total times an object has moved since 2009 for each year, then a column to sum all years.
+  mutate(total_moves_2009 = moves_2009 + studycenterviews_2009,
+         total_moves_2010 = moves_2010 + studycenterviews_2010,
+         total_moves_2011 = moves_2011 + studycenterviews_2011,
+         total_moves_2012 = moves_2012 + studycenterviews_2012,
+         total_moves_2013 = moves_2013 + studycenterviews_2013,
+         total_moves_2014 = moves_2014 + studycenterviews_2014,
+         total_moves_2015 = moves_2015 + studycenterviews_2015,
+         total_moves_2016 = moves_2016 + studycenterviews_2016,
+         total_moves_2017 = moves_2017 + studycenterviews_2017,
+         total_moves_2018 = moves_2018 + studycenterviews_2018,
+    #it should be noted that there is no way of knowing whether a "move" denotes
+    #relocation from storage into the museum, versus into another storage
+    #location. This is a flaw in looking at how many times an object has been
+    #"viewed". 
+         total_moves = moves_2009 +
+                      moves_2010 + 
+                      moves_2011 + 
+                      moves_2012 + 
+                      moves_2013 + 
+                      moves_2014 + 
+                      moves_2015 + 
+                      moves_2016 + 
+                      moves_2017 + 
+                      moves_2018) %>%  
+  # add another column for total number of pageviews, referring to number of
+  # times an object was visited on the museum's public website on a given day.
+  mutate(total_pageviews = pageviews_2009 +
+                          pageviews_2010 + 
+                          pageviews_2011 + 
+                          pageviews_2012 + 
+                          pageviews_2013 + 
+                          pageviews_2014 + 
+                          pageviews_2015 + 
+                          pageviews_2016 +
+                          pageviews_2017 + 
+                          pageviews_2018)
 ```
 
