@@ -19,13 +19,15 @@ library(devtools)
 
 ```
 
-```{r}
+```{r Cleaning Data}
+
 # Read in the data
 raw <- read_csv("data.csv")
 
-# We want to look at, in the final shiny app, how often items get moved and if
-# there is a correlation between the artist's ethnic background or nationality,
-# which, in this dataset, is defined as "personculture".
+# We want to look at, in the final shiny app, how often items from the Modern
+# and Contemporary Art galleries (rooms numbered 1120, 1110, 1100) get moved and
+# if there is a correlation with the artist's ethnic background or nationality,
+# which, in this dataset, can be defined as the variable, "personculture".
 
 # we can also look at the number of times an object has been viewed online,
 # given to us by the dataset that was pulled from the api. Add a total pageviews
@@ -41,24 +43,22 @@ raw <- read_csv("data.csv")
 # with values.
 
 tidydata <- raw %>%
-  # replace all NA values with 0's
-  mutate_if(is.numeric , replace_na, replace = 0) %>% 
   
-  # make a function that changes logical strings to integers
-  to_dbl <- function(x) {
-    if (is.logical(x)) {
-      mutate(x = as.numeric(x))
-    }
-  x
-  }
+  # change all logical strings to numerical ones
+  mutate(moves_2008 = as.numeric(moves_2008),
+         conservation_2008 = as.numeric(conservation_2008),
+         conservation_2009 = as.numeric(conservation_2009),
+         conservation_2010 = as.numeric(conservation_2010),
+         conservation_2018 = as.numeric(conservation_2018),
+         pageviews_2008 = as.numeric(pageviews_2008),
+         studycenterviews_2008 = as.numeric(studycenterviews_2008),
+         studycenterviews_2009 = as.numeric(studycenterviews_2009),
+         studycenterviews_2010 = as.numeric(studycenterviews_2010),
+         edits_2008 = as.numeric(edits_2008),
+         uniquepageviews_2008 = as.numeric(uniquepageviews_2008)) %>% 
   
-  # execute function for all logical strings
-  to_dbl("moves_2008")
-  to_dbl(x = conservation_2010)
-
-  
-mutate(moves_2008 = as.numeric(moves_2008)) %>% 
-  # add a column containing the total times an object has moved since 2009 for each year, then a column to sum all years.
+  # add a column containing the total times an object has moved since 2009 for
+  # each year, then a column to sum all years. study center views indicate the number of times an object was requested to be viewed in the 4th floor study center at the Fogg museum, so we can count this as an instance when an object was viewed in person.
   mutate(total_moves_2009 = moves_2009 + studycenterviews_2009,
          total_moves_2010 = moves_2010 + studycenterviews_2010,
          total_moves_2011 = moves_2011 + studycenterviews_2011,
@@ -69,10 +69,7 @@ mutate(moves_2008 = as.numeric(moves_2008)) %>%
          total_moves_2016 = moves_2016 + studycenterviews_2016,
          total_moves_2017 = moves_2017 + studycenterviews_2017,
          total_moves_2018 = moves_2018 + studycenterviews_2018,
-    #it should be noted that there is no way of knowing whether a "move" denotes
-    #relocation from storage into the museum, versus into another storage
-    #location. This is a flaw in looking at how many times an object has been
-    #"viewed". 
+         
          total_moves = moves_2009 +
                       moves_2010 + 
                       moves_2011 + 
@@ -83,6 +80,7 @@ mutate(moves_2008 = as.numeric(moves_2008)) %>%
                       moves_2016 + 
                       moves_2017 + 
                       moves_2018) %>%  
+    
   # add another column for total number of pageviews, referring to number of
   # times an object was visited on the museum's public website on a given day.
   mutate(total_pageviews = pageviews_2009 +
@@ -94,6 +92,50 @@ mutate(moves_2008 = as.numeric(moves_2008)) %>%
                           pageviews_2015 + 
                           pageviews_2016 +
                           pageviews_2017 + 
-                          pageviews_2018)
+                          pageviews_2018) %>% 
+    
+  # make two columns for each year that distinguish types of views: those online and those "on
+  # the wall" (in-person views). Note that the Art Museum API does not specify
+  # where exactly objects go during a move, so there is no way of knowing
+  # whether a "move" denotes relocation from storage into the museum, versus
+  # into another storage location. This is a flaw in looking at how many times
+  # an object has been "viewed" in person, in the Modern and Contemporary art
+  # galleries. For the purposes of this project, I am ignoring this for the time
+  # being, knowing that it may produce skewed results for my hypothesis. I am
+  # primarily focusing on gathering, tidying, and exhibiting the data.
+  mutate(in_person_views2009 = c("moves_2009", "studycenterviews2009"),
+         in_person_views2010 = c("moves_2010", "studycenterviews2010"),
+         in_person_views2011 = c("moves_2011", "studycenterviews2011"),
+         in_person_views2012 = c("moves_2012", "studycenterviews2012"),
+         in_person_views2013 = c("moves_2013", "studycenterviews2013"),
+         in_person_views2014 = c("moves_2014", "studycenterviews2014"),         
+         in_person_views2015 = c("moves_2015", "studycenterviews2015"),         
+         in_person_views2016 = c("moves_2016", "studycenterviews2016"),         
+         in_person_views2017 = c("moves_2017", "studycenterviews2017"),
+         in_person_views2018 = c("moves_2018", "studycenterviews2018")) %>% 
+         
+  rename(pageviews_2009 = online_views2009,
+         pageviews_2010 = online_views2010,
+         pageviews_2011 = online_views2011,
+         pageviews_2012 = online_views2012,
+         pageviews_2013 = online_views2013,
+         pageviews_2014 = online_views2014,
+         pageviews_2015 = online_views2015,
+         pageviews_2016 = online_views2016,
+         pageviews_2017 = online_views2017,
+         pageviews_2018 = online_views2018) %>% 
+         
+  # make total view types, adding all years together.
+  mutate(total_in_person_views = in_person_2009 + 
+                                in_person_2010 +in_person_2011+in_person_2012+
+                                in_person_2013+in_person_2014+in_person_2015+
+                                in_person_2016+in_person_2017+in_person_2018,
+         total_online_views = online_views2009+
+                              online_views2010+online_views2011+online_views2012+
+                              online_views2013+online_views2014,+online_views2015+
+                              online_views2016+online_views2017+online_views2018)
+
+
+
 ```
 
