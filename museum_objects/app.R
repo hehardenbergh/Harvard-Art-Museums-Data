@@ -3,7 +3,7 @@ library(tidyverse)
 library(knitr)
 library(scales)
 
-shiny_data <- read_rds("shiny_data.rds")
+data <- read_rds("shiny_data.rds")
 
 # Define UI for random distribution app ----
 ui <- fluidPage(
@@ -57,7 +57,7 @@ ui <- fluidPage(
                               "Venezuelan")
                   ),
       
-      radioButtons("personname", "Artist Name",
+      selectInput("personname", "Artist Name",
                   choices = c( "Mona Hatoum",
                                "Carrie Mae Weems",
                                "Gary Schneider",
@@ -167,7 +167,8 @@ ui <- fluidPage(
                                "Kenneth Noland",
                                "Howardena Pindell",              
                                "Agnes Martin"),
-                  selected = "Agnes Martin"),
+                  selected = "Agnes Martin",
+                  multiple = TRUE),
       
       selectInput("classification", "Type of Artwork",
                   choices = c("Sculpture",
@@ -178,7 +179,12 @@ ui <- fluidPage(
                               "Drawings",
                               "Multiples",
                               "Performance Artifacts",
-                              "Books"))
+                              "Books")),
+      
+      selectInput("viewtype2018", "Viewed Online or On the Wall in 2018?",
+                  choices = c(`Online` = "pageviews_2018",
+                              `In the Museum` = "moves_2018",
+                              `4th Floor Study Center` = "studycenterviews_2018"))
       
       
 
@@ -190,8 +196,7 @@ ui <- fluidPage(
       # Output: Tabset w/ plot, summary, and table ----
       tabsetPanel(type = "tabs",
                   tabPanel("Plot", plotOutput("plot")),
-                  tabPanel("Polled Democratic advantage", verbatimTextOutput("summary")),
-                  tabPanel("actual Democratic advantage", tableOutput("table"))
+                  tabPanel("Data", tableOutput("table"))
       )
     )
   )
@@ -206,52 +211,38 @@ server <- function(input, output) {
   # both tracked, and all expressions are called in the sequence
   # implied by the dependency graph.
   output$plot <- renderPlot({
-    if(input$line == TRUE) {
       shiny_data %>%
-        filter(position %in% input$type) %>% 
-        ggplot(aes(x = predicted_rep_advantage, y = actual_rep_advantage)) +
+        ggplot(aes(x = input$personculture, y = input$viewtype2018)) +
         geom_point() +
         geom_smooth(method="lm", se=FALSE) +
-        labs(x = "Predicted",
-             y = "Actual",
-             title = "Predicted vs. Actual Republican Advantage in U.S. 2018 Midterm Election",
-             subtitle = "Calculated by dividing the difference between Republican and Democrat votes by total votes cast")
-    }
-    else{
-      shiny_data %>%
-        filter(position %in% input$type) %>% 
-        ggplot(aes(x = predicted_rep_advantage, y = actual_rep_advantage)) +
-        geom_point() +
-        labs(x = "Predicted",
-             y = "Actual",
-             title = "Predicted vs. Actual Republican Advantage in U.S. 2018 Midterm Election",
-             subtitle = "Calculated by dividing the difference between Republican and Democrat votes by total votes cast")
-    }
+        labs(x = "Nationality",
+             y = "Views in 2018",
+             title = "How often do artworks by artists of color get viewed?")
   })
   
-  # display regression table
-  output$regression_table <- renderUI({
-    filteredData <- reactive ({
-      df <- app_data[app_data$state %in% input$state,]
-    })
-  })
+  # # display regression table
+  # output$regression_table <- renderUI({
+  #   filteredData <- reactive ({
+  #     df <- app_data[app_data$state %in% input$state,]
+    # })
+  # })
   
-  # Generate a summary of the data ----
-  output$summary <- renderPrint({
+  # # Generate a summary of the data ----
+  # output$summary <- renderPrint({
+  #   
+  #   shiny_data %>% 
+  #     select(input$data) %>% 
+  #     summary()
     
-    shiny_data %>% 
-      select(input$data) %>% 
-      summary()
-    
-  })
-  
-  # Generate an HTML table view of the data ----
-  output$table <- renderTable({
-    
-    shiny_data %>% 
-      
-      
-  })
+  # })
+  # 
+  # # Generate an HTML table view of the data ----
+  # output$table <- renderTable({
+  #   
+  #   shiny_data %>% 
+  #     
+  #     
+  # })
   
 }
 
