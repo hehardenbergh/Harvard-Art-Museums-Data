@@ -64,27 +64,7 @@ tidydata <- raw %>%
   # center at the Fogg museum, so we can count this as an instance when an
   # object was viewed in person.
   
-  mutate(total_moves_2009 = list(moves_2009, studycenterviews_2009),
-         total_moves_2010 = list(moves_2010, studycenterviews_2010),
-         total_moves_2011 = list(moves_2011, studycenterviews_2011),
-         total_moves_2012 = sum(moves_2012 + studycenterviews_2012),
-         total_moves_2013 = sum(moves_2013 + studycenterviews_2013),
-         total_moves_2014 = sum(moves_2014 + studycenterviews_2014),
-         total_moves_2015 = sum(moves_2015 + studycenterviews_2015),
-         total_moves_2016 = sum(moves_2016 + studycenterviews_2016),
-         total_moves_2017 = sum(moves_2017 + studycenterviews_2017),
-         total_moves_2018 = sum(moves_2018 + studycenterviews_2018),
-         
-         total_moves = total_moves_2009 +
-                      total_moves_2010 + 
-                      total_moves_2011 + 
-                      total_moves_2012 + 
-                      total_moves_2013 + 
-                      total_moves_2014 + 
-                      total_moves_2015 + 
-                      total_moves_2016 + 
-                      total_moves_2017 + 
-                      total_moves_2018) %>%  
+  mutate(total_moves = sum(moves_2009 + moves_2010 + moves_2011 + moves_2012 + moves_2013 + moves_2014 + moves_2015 + moves_2016 + moves_2017 + moves_2018, na.rm = TRUE)) %>%  
     
   # add another column for total number of pageviews, referring to number of
   # times an object was visited on the museum's public website on a given day.
@@ -100,7 +80,6 @@ tidydata <- raw %>%
                           pageviews_2016 +
                           pageviews_2017 + 
                           pageviews_2018) %>% 
-  rename(total_pageviews = total_online_views) %>% 
 
   # make two columns for each year that distinguish types of views: those online and those "on
   # the wall" (in-person views). Note that the Art Museum API does not specify
@@ -147,9 +126,13 @@ movetypes <- tidydata %>%
   slice(1:40)
 
 
+
+tidydata %>% 
+  ggplot(aes(accessionyear, total_moves, color=personculture), + geom_point())
+
 ```
 
 ```{r write rds for shiny app}
-write_rds(tidydata, path = data.rds)
+write_rds(tidydata, path = "shiny_data.rds")
 ```
 
