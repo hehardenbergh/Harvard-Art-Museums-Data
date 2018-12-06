@@ -1,5 +1,5 @@
 ---
-title: "HAM Data"
+title: "Process Data for Shiny App on Object Activity at the Harvard Art Museum"
 author: "Hannah Hardenbergh"
 date: "October 19, 2018"
 output: html_document
@@ -19,33 +19,70 @@ library(devtools)
 
 ```
 
-```{r Cleaning Data}
 
+```{r Clean dataframe}
 # Read in the data
 raw <- read_csv("data.csv")
 
-# We want to look at, in the final shiny app, how often items from the Modern
-# and Contemporary Art galleries (rooms numbered 1120, 1110, 1100) get moved and
-# if there is a correlation with the artist's ethnic background or nationality,
-# which, in this dataset, can be defined as the variable, "personculture".
+## We want to look at, in the final shiny app, how often objects from the Modern
+#and Contemporary Art galleries (rooms numbered 1120, 1110, 1100) get moved and
+#if there is a correlation with the artist's ethnic background or nationality,
+#which, in this dataset, can be defined as the variable, "personculture".
 
-# we can also look at the number of times an object has been viewed online,
-# given to us by the dataset that was pulled from the api. Add a total pageviews
-# variable while keeping the yearly pageviews observations intact with mutate.
-  
-# To see how often an object has moved, we need to add combine the types of
-# moves to form a total moves variable, while keeping the types of moves. to do
-# this, use mutate.
+# The number of times an object has been moved in a given year is defined as
+# "moves_year".
 
-# I am ignoring 2008 values because they are 1) all NA values and I don't have
+# The number of times an object has been viewed online each year, given to us by
+# the dataset that was pulled from the api, is defined as "pageviews_year".
+
+# Note: I am ignoring 2008 values because they are 1) all NA values and I don't have
 # the data to replace the NAs with numbers, which 2) makes them a logical
 # vector. I use as.numeric() to change this below, but it didn't replace NA's
-# with values.
+# with numerical values.
 
-tidydata <- raw %>%
-  
-  # change all logical strings to numerical ones
-  
+# study center views indicate the number of times an object was requested to be
+# viewed in the 4th floor study center at the Fogg museum, so we can count this
+# as an instance when an object was viewed in person.
+
+
+# start tidying the data. Translate all new NA's into 0's.
+
+activity$moves_2009[is.na(activity$moves_2009)] <- 0
+activity$moves_2010[is.na(activity$moves_2010)] <- 0
+activity$moves_2011[is.na(activity$moves_2011)] <- 0
+activity$moves_2012[is.na(activity$moves_2012)] <- 0
+activity$moves_2013[is.na(activity$moves_2013)] <- 0
+activity$moves_2014[is.na(activity$moves_2014)] <- 0
+activity$moves_2015[is.na(activity$moves_2015)] <- 0
+activity$moves_2016[is.na(activity$moves_2016)] <- 0
+activity$moves_2017[is.na(activity$moves_2017)] <- 0
+activity$moves_2018[is.na(activity$moves_2018)] <- 0
+
+activity$pageviews_2009[is.na(activity$pageviews_2009)] <- 0
+activity$pageviews_2010[is.na(activity$pageviews_2010)] <- 0
+activity$pageviews_2011[is.na(activity$pageviews_2011)] <- 0
+activity$pageviews_2012[is.na(activity$pageviews_2012)] <- 0
+activity$pageviews_2013[is.na(activity$pageviews_2013)] <- 0
+activity$pageviews_2014[is.na(activity$pageviews_2014)] <- 0
+activity$pageviews_2015[is.na(activity$pageviews_2015)] <- 0
+activity$pageviews_2016[is.na(activity$pageviews_2016)] <- 0
+activity$pageviews_2017[is.na(activity$pageviews_2017)] <- 0
+activity$pageviews_2018[is.na(activity$pageviews_2018)] <- 0
+
+activity$studycenterviews_2009[is.na(activity$studycenterviews_2009)] <- 0
+activity$studycenterviews_2010[is.na(activity$studycenterviews_2010)] <- 0
+activity$studycenterviews_2011[is.na(activity$studycenterviews_2011)] <- 0
+activity$studycenterviews_2012[is.na(activity$studycenterviews_2012)] <- 0
+activity$studycenterviews_2013[is.na(activity$studycenterviews_2013)] <- 0
+activity$studycenterviews_2014[is.na(activity$studycenterviews_2014)] <- 0
+activity$studycenterviews_2015[is.na(activity$studycenterviews_2015)] <- 0
+activity$studycenterviews_2016[is.na(activity$studycenterviews_2016)] <- 0
+activity$studycenterviews_2017[is.na(activity$studycenterviews_2017)] <- 0
+activity$studycenterviews_2018[is.na(activity$studycenterviews_2018)] <- 0
+
+# change all logical strings to numerical ones
+
+raw %>% 
   mutate(moves_2008 = as.numeric(moves_2008),
          conservation_2008 = as.numeric(conservation_2008),
          conservation_2009 = as.numeric(conservation_2009),
@@ -57,58 +94,73 @@ tidydata <- raw %>%
          studycenterviews_2010 = as.numeric(studycenterviews_2010),
          edits_2008 = as.numeric(edits_2008),
          uniquepageviews_2008 = as.numeric(uniquepageviews_2008)
-         ) %>% 
+         )
+
+activity <- raw %>% rowwise() %>%
   
-  # add a column containing the total times an object has moved since 2009 that
-  # sums up all years. study center views indicate the number of times an object
-  # was requested to be viewed in the 4th floor study center at the Fogg museum,
-  # so we can count this as an instance when an object was viewed in person.
+# Add a variable that sums a total of all the times an object has moved since
+# 2009.
   
-  mutate(total_moves = `moves_2009` + 
-                        `moves_2010` + 
-                        `moves_2011` + 
-                        `moves_2012` + 
-                        `moves_2013` + 
-                        `moves_2014` + 
-                        `moves_2015` + 
-                        `moves_2016` + 
-                        `moves_2017` + 
-                        `moves_2018`) %>%  
-    
+  mutate(total_moves = sum(moves_2009,
+                           moves_2010,
+                           moves_2011,
+                           moves_2012,
+                           moves_2013,
+                           moves_2014,
+                           moves_2015,
+                           moves_2016,
+                           moves_2017,
+                           moves_2018,
+                           na.rm = T)) %>% 
+
   # add another column for total number of pageviews, referring to number of
-  # times an object was visited on the museum's public website on a given day.
-  # Rename them to online views.
+  # times an object was visited on the museum's public website on a given day
+  # since 2009.
   
-  # summarise(total_pageviews = sum(pageviews_2009 + pageviews_2010 + pageviews_2011 + pageviews_2012 + pageviews_2013 + pageviews_2014 + pageviews_2015 + pageviews_2016 + pageviews_2017 + pageviews_2018),
-  #           
-  #        total_studycenterviews = sum(studycenterviews_2009 + studycenterviews_2010 + studycenterviews_2011 + studycenterviews_2012 + studycenterviews_2013 + studycenterviews_2014 + studycenterviews_2015 + studycenterviews_2016 + studycenterviews_2017 + studycenterviews_2018)) %>%
-
-  # make two columns for each year that distinguish types of views: those online and those "on
-  # the wall" (in-person views). Note that the Art Museum API does not specify
-  # where exactly objects go during a move, so there is no way of knowing
-  # whether a "move" denotes relocation from storage into the museum, versus
-  # into another storage location. This is a flaw in looking at how many times
-  # an object has been "viewed" in person, in the Modern and Contemporary art
-  # galleries. For the purposes of this project, I am ignoring this for the time
-  # being, knowing that it may produce skewed results for my hypothesis. I am
-  # primarily focusing on gathering, tidying, and visualizing the data.
-  
-  # mutate(in_person_views2009 = moves_2009 + studycenterviews_2009,
-  #        in_person_views2010 = moves_2010 + studycenterviews_2010,
-  # mutate(moves_2011, studycenterviews_2011, key = "in_person_views2011", value = n) %>%
-  # mutate(moves_2012, studycenterviews_2012, key = "in_person_views2012", value = n) %>%
-  # mutate(moves_2013, studycenterviews_2013, key = "in_person_views2013", value = n) %>%
-  # mutate(moves_2014, studycenterviews_2014, key = "in_person_views2014", value = n) %>%
-  # mutate(moves_2015, studycenterviews_2015, key = "in_person_views2015", value = n) %>%
-  # mutate(moves_2016, studycenterviews_2016, key = "in_person_views2016", value = n) %>%
-  # mutate(moves_2017, studycenterviews_2017, key = "in_person_views2017", value = n) %>%
-  # mutate(moves_2018, studycenterviews_2018, key = "in_person_views2018", value = n) %>%
-  # 
+  mutate(total_pageviews = sum(pageviews_2009,
+                               pageviews_2010,
+                               pageviews_2011,
+                               pageviews_2012,
+                               pageviews_2013,
+                               pageviews_2014,
+                               pageviews_2015,
+                               pageviews_2016,
+                               pageviews_2017,
+                               pageviews_2018,
+                               na.rm = T)) %>% 
 
 
+# Add a total study center views variable while keeping the yearly pageviews observations
+# intact with mutate.
+
+  mutate(total_studycenterviews = sum(studycenterviews_2009,
+                                      studycenterviews_2010,
+                                      studycenterviews_2011,
+                                      studycenterviews_2012,
+                                      studycenterviews_2013,
+                                      studycenterviews_2014,
+                                      studycenterviews_2015,
+                                      studycenterviews_2016,
+                                      studycenterviews_2017,
+                                      studycenterviews_2018,
+                                      na.rm = T)) 
   
-  #translate all new NA's into 0's
-  mutate_if(is.numeric , replace_na, replace = 0)
+  # make a column with the year 
+```
+
+
+
+
+```{r }
+
+  
+  
+
+
+
+         
+
+
 ```
 
 
@@ -116,29 +168,35 @@ tidydata <- raw %>%
 
 # make a tibble for types of moves, including 2 columns per id: online views and in-person views.
 
-movetypes <- tidydata %>% 
+movetypes <- activity %>% 
   select(title,
+         personname,
+         personculture,
          total_moves,
-         total_pageviews) %>% 
-  rename(online_views = total_pageviews,
-         inperson_views = total_moves) %>% 
+         total_pageviews,
+         total_studycenterviews) %>% 
+  mutate(inperson_views = sum(total_moves,
+                              total_studycenterviews,
+                              na.rm = T)) %>% 
+  rename(online_views = total_pageviews) %>% 
   slice(1:40)
 
 movetypes %>% 
-  kableExtra::kable()
-
-# play with plotting variables
-
-tidydata %>% 
-  ggplot(aes(objectid, pageviews_2017), + geom_point())
-
-# tidydata %>% 
-#   select(moves_2009:moves_2018) %>%
-#   summarise(totalmoves = sum(moves_2009))
+  select(title,
+         personname,
+         personculture,
+         inperson_views,
+         online_views) %>% 
+  arrange(desc(inperson_views)) %>% 
+  kableExtra::kable(col.names = c("Object Title",
+                                  "Artist",
+                                  "Artist's Nationality",
+                                  "Total In-Person Exhibits",
+                                  "Total Online Visits"))
 
 ```
 
 ```{r write rds for shiny app}
-write_rds(shiny_data, "shiny_data.rds")
+write_rds(activity, "shiny_data.rds")
 ```
 
