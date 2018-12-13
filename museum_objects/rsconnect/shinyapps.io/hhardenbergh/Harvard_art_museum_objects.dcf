@@ -1,0 +1,12 @@
+name: Harvard_art_museum_objects
+title: Harvard_art_museum_objects
+username:
+account: hhardenbergh
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 605042
+bundleId: 1745599
+url: https://hhardenbergh.shinyapps.io/Harvard_art_museum_objects/
+when: 1544103284.97259
+asMultiple: FALSE
+asStatic: FALSE
