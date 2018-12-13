@@ -117,7 +117,7 @@ ui <- fluidPage(
 
       selectInput("x", "Choose Values to Plot", 
                    choices = c("Online Page Visits" = "total_pageviews",
-                               "In-Gallery Exhibition Frequency" = "total_moves"),
+                               "In-Gallery Exhibitions" = "total_moves"),
                    selected = "total_moves")
     ),
     
@@ -154,6 +154,7 @@ server <- function(input, output) {
   # implied by the dependency graph.
   output$plot <- renderPlot({
       shiny_data %>%
+        filter(personculture != "NA") %>% 
         ggplot(aes(x = input$x, fill = personculture)) +
         geom_density(alpha = 0.2) +
         labs(x = x_title(),
