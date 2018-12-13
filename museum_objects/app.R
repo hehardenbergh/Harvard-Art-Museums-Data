@@ -100,8 +100,6 @@ shiny_data <- read_rds("shiny_data.rds") %>%
   )
   )
 
-  
-
 # Define UI for random distribution app ----
 ui <- fluidPage(
   
@@ -128,7 +126,7 @@ ui <- fluidPage(
       tabsetPanel(type = "tabs",
                   tabPanel("Plot", plotOutput("plot")),
                   tabPanel("Most Moves", dataTableOutput("table")),
-                  tabPanel("About", textOutput("about"))
+                  tabPanel("About", htmlOutput("about"))
       )
     )
   )
@@ -153,7 +151,15 @@ server <- function(input, output) {
              title = "Relationships between Artwork Exhibition Rate and Artist's Nationality")
   })
   
-  
+  # insert content for "about" tab
+  output$about <- renderUI({
+    str1 = "This app displays how often objects from the Modern and Contemporary Art galleries (rooms numbered 1120, 1110, 1100) are exhibited to question any correlation between the artist's nationality and the rate at which their artwork is viewed, both online and in-person."
+    str2 = "Thanks to the invaluable help from Jeff Steward, Director of Digital Infrastructure and Emerging Technology at the Harvard Art Museums, this data was gathered from the Museum’s API, which Mr. Steward oversees. The API can be found on the Harvard Art Museum website, here:"
+    str3 = a("Harvard Art Museums API information", href = "https://www.harvardartmuseums.org/collections/api")
+      
+    HTML(paste(str1, str2, str3, sep = "<br> "))
+  })
+
 
   # Generate an HTML table view of the data ----
   output$table <- renderDataTable({
