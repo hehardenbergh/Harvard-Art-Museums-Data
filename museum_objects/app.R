@@ -3,191 +3,122 @@ library(tidyverse)
 library(knitr)
 library(DT)
 library(scales)
+library(plotly)
 
-activity <- read_rds("shiny_data.rds")
+shiny_data <- read_rds("shiny_data.rds") %>% 
+  replace_na(list(moves_2009 = 0,
+                  moves_2010 = 0,
+                  moves_2011 = 0,
+                  moves_2012 = 0,
+                  moves_2013 = 0,
+                  moves_2014 = 0,
+                  moves_2015 = 0,
+                  moves_2016 = 0,
+                  moves_2017 = 0,
+                  moves_2018 = 0,
+                  
+                  pageviews_2009 = 0,
+                  pageviews_2010 = 0,
+                  pageviews_2011 = 0,
+                  pageviews_2012 = 0,
+                  pageviews_2013 = 0,
+                  pageviews_2014 = 0,
+                  pageviews_2015 = 0,
+                  pageviews_2016 = 0,
+                  pageviews_2017 = 0,
+                  pageviews_2018 = 0,
+                  
+                  studycenterviews_2009 = 0,
+                  studycenterviews_2010 = 0,
+                  studycenterviews_2011 = 0,
+                  studycenterviews_2012 = 0,
+                  studycenterviews_2013 = 0,
+                  studycenterviews_2014 = 0,
+                  studycenterviews_2015 = 0,
+                  studycenterviews_2016 = 0,
+                  studycenterviews_2017 = 0,
+                  studycenterviews_2018 = 0)) %>% 
+  
+  
+  # Add a variable that sums a total of all the times an object has moved since
+  # 2009.
+  
+  mutate(total_moves = 
+           moves_2009 + 
+           moves_2010 + 
+           moves_2011 + 
+           moves_2012 +
+           moves_2013 + 
+           moves_2014 + 
+           moves_2015 + 
+           moves_2016 + 
+           moves_2017 + 
+           moves_2018) %>% 
+  
+  # add another column for total number of pageviews, referring to number of
+  # times an object was visited on the museum's public website on a given day
+  # since 2009.
+  
+  mutate(total_pageviews = 
+           pageviews_2009 +
+           pageviews_2010 + 
+           pageviews_2011 + 
+           pageviews_2012 + 
+           pageviews_2013 + 
+           pageviews_2014 + 
+           pageviews_2015 + 
+           pageviews_2016 + 
+           pageviews_2017 + 
+           pageviews_2018) %>% 
+  
+  
+  # Add a total study center views variable while keeping the yearly pageviews observations
+  # intact with mutate.
+  
+  mutate(total_studycenterviews = 
+           studycenterviews_2009 + 
+           studycenterviews_2010 + 
+           studycenterviews_2011 +
+           studycenterviews_2012 + 
+           studycenterviews_2013 + 
+           studycenterviews_2014 + 
+           studycenterviews_2015 + 
+           studycenterviews_2016 + 
+           studycenterviews_2017 + 
+           studycenterviews_2018) %>% 
+  
+  # to plot artists nationalities more generally, broaden the geographic
+  # location with which they identify for user accessibility.
+  
+  mutate(personculture = fct_collapse(personculture, 
+                                      `Europe` = c("German", "French", "British", "Swiss", "Danish", "Austrian"),
+                                      `North America` = c("American", "Cuban", "NA"),
+                                      `South America` = c("Argentinian", "Venezuelan", "Colombian", "Brazilian"),
+                                      `Asia` = c("Japanese", "Chinese", "Palestinian"),
+                                      `Australia` = "Australian",
+                                      `Africa` = "African"
+  )
+  )
+
+  
 
 # Define UI for random distribution app ----
 ui <- fluidPage(
   
   # App title ----
-  titlePanel("Off the Wall: Object Activity at the Harvard Art Museum"),
-  "Looking at how often Modern and Contemporary Art Gallery objects circulate",
+  titlePanel("Off the Wall: Artwork Activity at the Harvard Art Museum"),
+  "How often do objects in the Modern and Contemporary Art Gallery circulate?",
   
   # Sidebar layout with input and output definitions ----
   sidebarLayout(
     
     # Sidebar panel for inputs ----
     sidebarPanel(
-      
-      # Input: drop-down menu to display observations  ----
-      # selectInput("x",
-      #             "Year:",
-      #             choices = c(`2009` = "moves"),
-      #             
-      #             "y",
-      #             "Y-axis:",
-      #             choices = c(`Predicted Democratic Advantage` = "poll_dem_advantage",
-      #                         `Actual Democratic Advantage` = "actual_dem_advantage"),
-      #             multiple = TRUE),
-      
-      checkboxInput("line", label = "Add linear model"),
-      htmlOutput("see_table"),
-      htmlOutput("regression_table"),
-      
-      
-      # br() element to introduce extra vertical spacing ----
-      br(),
-      
-      selectInput("personculture", "Artist Nationality",
-                  choices = c("American",
-                              "African",
-                              "Argentinian",
-                              "Australian",
-                              "Austrian",
-                              "Brazilian",
-                              "British",
-                              "Chinese",
-                              "Colombian",
-                              "Cuban",
-                              "Danish",
-                              "French",
-                              "German",
-                              "Japanese",
-                              "Palestinian",
-                              "Swiss",
-                              "Venezuelan")
-                  ),
-      
-      selectInput("personname", "Artist Name",
-                  choices = c("Aaron Siskind",
-                              "Agnes Martin",
-                              "Alice Hutchins",
-                              "Alison Knowles",
-                              "Anna Bella Geiger",
-                              "Andy Warhol",
-                              "Annette Lemieux",
-                              "Arman (Armand Pierre Fernandez)",
-                              "Arnulf Rainer",
-                              "Ay-O",
-                              "Ben Patterson",
-                              "Ben Vautier",
-                              "Bernd and Hilla Becher",
-                              "Brice Marden",
-                              "Bruce Nauman",
-                              "Candida Höfer",
-                              "Camille Graeser",
-                              "Carmelo Arden Quin",
-                              "Carrie Mae Weems",
-                              "Catherine Wagner",
-                              "Charlotte Posenenske",
-                              "Clarence J. Laughlin",
-                              "Corinne Wasmuht",
-                              "Cy Twombly",
-                              "Danny Lyon",
-                              "David Smith",
-                              "Dennis Oppenheim",
-                              "Diane Arbus",
-                              "Dick Higgins",
-                              "Doris Salcedo",
-                              "Edward Ruscha",
-                              "Ellsworth Kelly",                
-                              "Emmett Williams",                
-                              "Ernesto Fernández",
-                              "Eva Hesse",
-                              "Faith Ringgold",
-                              "Franz Erhard Walther",
-                              "Gary Schneider",
-                              "Gego (Gertrude Goldschmidt)",
-                              "Geoffrey Hendricks",
-                              "Georg Baselitz",                 
-                              "George Brecht",                  
-                              "George Maciunas",
-                              "Gordon Matta-Clark",
-                              "Graham Howe",
-                              "Günther Uecker",
-                              "Hanne Darboven",
-                              "Henry Holmes Smith",
-                              "Henry Wessel Jr.",
-                              "Hi Red Center",
-                              "Hollis Frampton",
-                              "Howardena Pindell",              
-                              "Jack Welpott",
-                              "J.D. 'Okhai Ojeikere",
-                              "Jock Reynolds",
-                              "Joe Jones",
-                              "John Cage",
-                              "John Coplans",
-                              "Josef Albers",                  
-                              "Joseph Beuys",
-                              "Joseph Kosuth",
-                              "Karl-Heinz Chargesheimer",
-                              "Ken Friedman",
-                              "Kenneth Noland",
-                              "Kerry James Marshall",
-                              "Kiki Smith",
-                              "Konrad Klapheck",
-                              "La Monte Young",
-                              "LaToya Ruby Frazier",
-                              "Lorna Simpson",
-                              "Lotte Jacobi",
-                              "Louise Nevelson",
-                              "Max Bill",
-                              "Mel Bochner",
-                              "Mimi Smith",
-                              "Minor White",                    
-                              "Mira Schendel",
-                              "Mieko (Chieko) Shiomi",
-                              "Mona Hatoum",
-                              "Morris Louis",
-                              "Nam June Paik",
-                              "Otto Piene",
-                              "Otto Steinert",
-                              "Peter Keetman",
-                              "Per Kirkeby",                    
-                              "Rachel Whiteread",
-                              "Ralston Crawford",
-                              "Richard Avedon",
-                              "Richard Tuttle",
-                              "Robert Gober",
-                              "Robert Rauschenberg",
-                              "Robert Watts",
-                              "Rosemarie Trockel",              
-                              "Roy Lichtenstein",               
-                              "Sigmar Polke",                   
-                              "Sol LeWitt",
-                              "Takehisa Kosugi",
-                              "Teresita Fernandez",
-                              "Thomas Struth",
-                              "Todd Hido",
-                              "Toni Schneiders",
-                              "Vera Lutter",
-                              "Werner Büttner",
-                              "William A. Garnett",
-                              "Yoko Ono",
-                              "Various Artists",
-                              "VALIE EXPORT",
-                              "Victor Grippo",
-                              "Zhang Xiaogang"),
-                  selected = "Agnes Martin",
-                  multiple = TRUE),
-      
-      selectInput("classification", "Type of Artwork",
-                  choices = c("Sculpture",
-                              "Photographs",
-                              "Paintings",
-                              "Audiovisual Works",
-                              "Prints",
-                              "Drawings",
-                              "Multiples",
-                              "Performance Artifacts",
-                              "Books")),
-      
-      selectInput("viewtype", "Viewed Online or On the Wall in 2018?",
-                  choices = c(`Online` = "total_pageviews",
-                              `In the Museum` = "total_moves",
-                              `4th Floor Study Center` = "studycenterviews_2018"))
-      
 
+      radioButtons("plotdata", "Choose Values to Plot", 
+                   choices = c("Artist Nationality" = "personculture",
+                               "Artwork Type" = "classification"),
+                   selected = "personculture")
     ),
     
     # Main panel for displaying outputs ----
@@ -196,7 +127,8 @@ ui <- fluidPage(
       # Output: Tabset w/ plot, summary, and table ----
       tabsetPanel(type = "tabs",
                   tabPanel("Plot", plotOutput("plot")),
-                  tabPanel("Most Moves", dataTableOutput("table"))
+                  tabPanel("Most Moves", dataTableOutput("table")),
+                  tabPanel("About", textOutput("about"))
       )
     )
   )
@@ -211,51 +143,37 @@ server <- function(input, output) {
   # both tracked, and all expressions are called in the sequence
   # implied by the dependency graph.
   output$plot <- renderPlot({
-      activity %>%
-        ggplot(aes(x = input$personname, y = input$viewtype)) +
-        geom_point() +
-        labs(x = "Artist",
-             y = "Object Activity",
-             title = "How often do artworks by artists of color get viewed?")
+      shiny_data %>%
+        select(total_moves, 
+               classification, 
+               personculture)%>% 
+        ggplot(aes(x = total_moves, fill = personculture)) +
+        geom_density(alpha = 0.3) +
+        labs(x = "Views, Online and In-Person",
+             title = "Relationships between Artwork Exhibition Rate and Artist's Nationality")
   })
-  
-  # # display regression table
-  # output$regression_table <- renderUI({
-  #   filteredData <- reactive ({
-  #     df <- app_data[app_data$state %in% input$state,]
-    # })
-  # })
   
   
 
   # Generate an HTML table view of the data ----
   output$table <- renderDataTable({
-    activity %>% 
-      select(title,
-            personname,
-            total_moves,
-            total_pageviews,
-            total_studycenterviews) %>% 
-      mutate(inperson_views = sum(total_moves,
-                                total_studycenterviews,
-                                na.rm = T)) %>% 
-      rename(online_views = total_pageviews)
-
-    movetypes %>% 
+    table_1_data <- shiny_data %>% 
       select(title,
              personname,
-             inperson_views,
-             online_views,
-             total_studycenterviews) %>% 
-      arrange(desc(inperson_views)) %>% 
-      kableExtra::kable(col.names = c("Object Title",
-                                    "Artist",
-                                    "Total In-Person Exhibits",
-                                    "Total Online Visits",
-                                    "Visits in the 4th Floor Study Center"),
-                      caption = "Most Moves in the Modern and Contemporary Art Gallery at the Fogg Museum")
-    
-  })
+             personculture,
+             total_moves,
+             total_pageviews,
+             total_studycenterviews)
+   
+    datatable(table_1_data, colnames = c(`Artwork Title` = "title",
+                                         `Artist` = "personname",
+                                         `Artist's Nationality` = "personculture",
+                                         `Views in the Gallery` = "total_moves",
+                                         `Views Online` = "total_pageviews",
+                                         `Views in the 4th Floor Study Center` = "total_studycenterviews"))
+   })
+  
+  # output$value <- renderText({input$about})
 }
 
 # Create Shiny app ----
