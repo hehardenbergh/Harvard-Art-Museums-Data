@@ -3,7 +3,7 @@ library(tidyverse)
 library(knitr)
 library(DT)
 library(scales)
-library(plotly)
+library(plotly) 
 
 shiny_data <- read_rds("shiny_data.rds") %>% 
   replace_na(list(moves_2009 = 0,
