@@ -17,6 +17,6 @@ You can also look at Harvard's objects and get detailed descriptions here: https
 
 
 
-## Acknowledgments
+### Acknowledgments
 
 * A Special Thanks to Jeff Steward, who manages the museum API and database. 
