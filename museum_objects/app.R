@@ -90,9 +90,11 @@ shiny_data <- read_rds("shiny_data.rds") %>%
   # to plot artists nationalities more generally, broaden the geographic
   # location with which they identify for user accessibility.
   
+  # case_when(shiny_data$personculture %% "NA" == 0 ~ "North American") %>% 
+  
   mutate(personculture = fct_collapse(personculture, 
                                       `Europe` = c("German", "French", "British", "Swiss", "Danish", "Austrian"),
-                                      `North America` = c("American", "Cuban", "NA"),
+                                      `North America` = c("American", "Cuban"),
                                       `South America` = c("Argentinian", "Venezuelan", "Colombian", "Brazilian"),
                                       `Asia` = c("Japanese", "Chinese", "Palestinian"),
                                       `Australia` = "Australian",
@@ -113,10 +115,10 @@ ui <- fluidPage(
     # Sidebar panel for inputs ----
     sidebarPanel(
 
-      radioButtons("plotdata", "Choose Values to Plot", 
-                   choices = c("Artist Nationality" = "personculture",
-                               "Artwork Type" = "classification"),
-                   selected = "personculture")
+      selectInput("x", "Choose Values to Plot", 
+                   choices = c("Online Page Visits" = "total_pageviews",
+                               "In-Gallery Exhibition Frequency" = "total_moves"),
+                   selected = "total_moves")
     ),
     
     # Main panel for displaying outputs ----
@@ -124,8 +126,8 @@ ui <- fluidPage(
       
       # Output: Tabset w/ plot, summary, and table ----
       tabsetPanel(type = "tabs",
-                  tabPanel("Plot", plotOutput("plot")),
-                  tabPanel("Most Moves", dataTableOutput("table")),
+                  tabPanel("Graph", plotOutput("plot")),
+                  tabPanel("Gallery Data", dataTableOutput("table")),
                   tabPanel("About", htmlOutput("about"))
       )
     )
@@ -135,6 +137,16 @@ ui <- fluidPage(
 # Define server logic for random distribution app ----
 server <- function(input, output) {
   
+  # make x-axis label reactive according to input selected
+  
+  x_title <- reactive({
+    if (input$x == "total_moves") {
+      x_title = "In-Gallery Exhibition Frequency"
+    } else if (input$x == "total_pageviews") {
+      x_title = "Online Page Visits"
+    }
+  })
+  
   # Generate a plot of the data ----
   # Also uses the inputs to build the plot label. Note that the
   # dependencies on the inputs and the data reactive expression are
@@ -142,13 +154,11 @@ server <- function(input, output) {
   # implied by the dependency graph.
   output$plot <- renderPlot({
       shiny_data %>%
-        select(total_moves, 
-               classification, 
-               personculture)%>% 
-        ggplot(aes(x = total_moves, fill = personculture)) +
-        geom_density(alpha = 0.3) +
-        labs(x = "Views, Online and In-Person",
-             title = "Relationships between Artwork Exhibition Rate and Artist's Nationality")
+        ggplot(aes(x = input$x, fill = personculture)) +
+        geom_density(alpha = 0.2) +
+        labs(x = x_title(),
+             title = "Relationships between Artwork Exhibition Rate, Online Pagevisits, and Artist's Nationality")
+    
   })
   
   # insert content for "about" tab
@@ -179,7 +189,6 @@ server <- function(input, output) {
                                          `Views in the 4th Floor Study Center` = "total_studycenterviews"))
    })
   
-  # output$value <- renderText({input$about})
 }
 
 # Create Shiny app ----
