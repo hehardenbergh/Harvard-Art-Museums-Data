@@ -155,7 +155,7 @@ server <- function(input, output) {
   output$plot <- renderPlot({
       shiny_data %>%
         filter(personculture != "NA") %>% 
-        ggplot(aes(x = input$x, fill = personculture)) +
+        ggplot(aes_string(x = input$x, fill = "personculture")) +
         geom_density(alpha = 0.2) +
         labs(x = x_title(),
              title = "Relationships between Artwork Exhibition Rate, Online Pagevisits, and Artist's Nationality")

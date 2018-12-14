@@ -5,8 +5,8 @@ account: hhardenbergh
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 605042
-bundleId: 1745599
+bundleId: 1760956
 url: https://hhardenbergh.shinyapps.io/Harvard_art_museum_objects/
-when: 1544103284.97259
+when: 1544712040.38426
 asMultiple: FALSE
 asStatic: FALSE
