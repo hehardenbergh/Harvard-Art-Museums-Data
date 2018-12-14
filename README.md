@@ -30,4 +30,4 @@ http://hhardenbergh.shinyapps.io/Harvard_art_museum_objects
 ### Acknowledgments
 
 * A Special Thanks to Jeff Steward, who manages the museum API and database.
-* Thank you to Dillon Smith, Ethan McCollister, and Jack Luby, who gave suggestions and helped debug along the way.
+* Thank you to Dillon Smith, Ethan McCollister, Jack Luby, and other students in GOV 1005 who gave suggestions and helped debug along the way.
