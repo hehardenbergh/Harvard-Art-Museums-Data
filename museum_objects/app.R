@@ -114,22 +114,29 @@ ui <- fluidPage(
     
     # Sidebar panel for inputs ----
     sidebarPanel(
-
+      
       selectInput("x", "Choose Values to Plot", 
-                   choices = c("Online Page Visits" = "total_pageviews",
-                               "In-Gallery Exhibitions" = "total_moves"),
-                   selected = "total_moves")
-    ),
+                  choices = c("Online Page Visits" = "total_pageviews",
+                              "In-Gallery Exhibitions" = "total_moves"),
+                  selected = "total_moves"),
+      
+      tags$h6(helpText("To plot how many page visits an artwork has received on the Harvard Art Museum's website, select \"Online Page Visits.\" To show how many times an artwork has been viewed in the gallery, select \"In-Gallery Exhibitions.\" see the `About` tab for more details on the data."))
+      
+      
+),
     
     # Main panel for displaying outputs ----
     mainPanel(
       
       # Output: Tabset w/ plot, summary, and table ----
       tabsetPanel(type = "tabs",
-                  tabPanel("Graph", plotOutput("plot")),
-                  tabPanel("Gallery Data", dataTableOutput("table")),
+                  tabPanel("Graph", plotOutput("plot"),
+                           htmlOutput("graph_summary")),
+                  tabPanel("Gallery Data", dataTableOutput("table"),
+                           htmlOutput("table_summary")),
                   tabPanel("About", htmlOutput("about"))
       )
+      
     )
   )
 )
@@ -156,19 +163,43 @@ server <- function(input, output) {
       shiny_data %>%
         filter(personculture != "NA") %>% 
         ggplot(aes_string(x = input$x, fill = "personculture")) +
-        geom_density(alpha = 0.2) +
+        geom_density(alpha = 0.5) +
         labs(x = x_title(),
+             y = "Density Scale",
              title = "Relationships between Artwork Exhibition Rate, Online Pagevisits, and Artist's Nationality")
     
   })
   
+  output$graph_summary <- renderUI({
+    str1 = "<h3>Why look at Harvard's art?</h3>" 
+    str2 = "This graph specifically considers artworks shown in the Modern and Contemporary Gallery on the first floor of the Fogg Museum. Artist's nationalities were categorized by continent. From this graphic, it is evident from the graphic above that there is no strong correlation between the artist's nationality and the amount of times their work has been displayed in the modern art gallery. However, there is a huge range in the frequencies that specific artworks were viewed, both online and in the gallery. See the 'Gallery Data' tab to find out which artworks are most popular among visitors."
+
+    HTML(paste(str1, str2, sep = ''))
+  })
+  
+  output$table_summary <- renderUI({
+    str1 = "<h3>Which artworks are viewed the most?</h3>" 
+    str2 = "In this table, there is a significant difference between the minimum and maximum times artworks have been viewed online. There is a slightly smaller range between artworks displayed on the walls of the gallery. Try looking for your artist or artwork, if you have one. How often has it been viewed in the last ten years?"
+
+    HTML(paste(str1, str2, sep = ''))
+  })
+  
   # insert content for "about" tab
   output$about <- renderUI({
-    str1 = "This app displays how often objects from the Modern and Contemporary Art galleries (rooms numbered 1120, 1110, 1100) are exhibited to question any correlation between the artist's nationality and the rate at which their artwork is viewed, both online and in-person."
-    str2 = "Thanks to the invaluable help from Jeff Steward, Director of Digital Infrastructure and Emerging Technology at the Harvard Art Museums, this data was gathered from the Museum’s API, which Mr. Steward oversees. The API can be found on the Harvard Art Museum website, here:"
-    str3 = a("Harvard Art Museums API information", href = "https://www.harvardartmuseums.org/collections/api")
-      
-    HTML(paste(str1, str2, str3, sep = "<br> "))
+    
+    str1 = "This app displays how often objects from the Modern and Contemporary Art galleries (rooms numbered 1120, 1110, 1100) are exhibited to question any correlation between the artist's nationality and the rate at which their artwork is viewed, both online and in-person, since 2009."
+    str2 = "Concerning the data, there is unfortunately no way to discern which type of \"move\" an object undergoes, whether it is from one storage unit to another, or from one storage unit to the museum and vice versa. Unfortunately, this may skew results for my hypothesis about which types of artworks by different artists get viewed in the gallery more often. It is a compelling data set, nonetheless, with huge differences in how often selected modern and contemporary artworks have been viewed since 2009."
+    str3 = "Thanks to the invaluable help from Jeff Steward, Director of Digital Infrastructure and Emerging Technology at the Harvard Art Museums, this data was gathered from the Museum’s API, which Mr. Steward oversees. The API can be found on the Harvard Art Museum website, here:"  
+    str4 = a("Harvard Art Museums API information", href = "https://www.harvardartmuseums.org/collections/api")
+    str5 = a("Harvard Art Museum API Github Repository", href = "https://github.com/harvardartmuseums/api-docs")
+    
+    HTML(paste(str1,
+               str2,
+               str3,
+               str4,
+               str5,
+               sep = '<br/><br/>'))
+   
   })
 
 
@@ -189,6 +220,12 @@ server <- function(input, output) {
                                          `Views Online` = "total_pageviews",
                                          `Views in the 4th Floor Study Center` = "total_studycenterviews"))
    })
+  
+  output$value <- renderText({
+    input$caption
+  })
+  
+  
   
 }
 

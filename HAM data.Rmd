@@ -6,23 +6,31 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE,
+
+# set code chunks to disappear in html
+
+knitr::opts_chunk$set(error = FALSE,
+                      comment = NA,
+                      echo = FALSE,
                       warning = FALSE,
                       message = FALSE)
+
+#load libraries
 
 library(tidyverse)
 library(forcats)
 
 
 ```
-
+## Below are selected tables to view subsets of data gathered from the Harvard Art Museum's API.
 
 ```{r Clean dataframe}
 # Read in the data
+
 rawdata <- read_csv("data.csv")
 
 ## We want to look at, in the final shiny app, how often objects from the Modern
-#and Contemporary Art galleries (rooms numbered 1120, 1110, 1100) get moved and
+#and Contemporary Art galleries (rooms numbered 1120, 1110, 1100) were moved from 2009-2018 and
 #if there is a correlation with the artist's ethnic background or nationality,
 #which, in this dataset, can be defined as the variable, "nationality".
 
@@ -166,7 +174,7 @@ activity <- rawdata %>%
 
 
 ```
-  
+### Artworks with the Most Page Visits on the Harvard Art Museum website
 
 ```{r online views table}
 
@@ -198,12 +206,18 @@ online_table %>%
          personculture,
          online_views) %>% 
   arrange(desc(online_views)) %>% 
+  slice(1:10) %>%
   kableExtra::kable(col.names = c("Object Title",
                                   "Artwork Medium",
                                   "Artist",
                                   "Artist's Nationality",
-                                  "Total Online Views"))
+                                  "Total Online Views")) %>% 
+  kableExtra::kable_styling("striped", full_width = F)
+
 ```
+
+
+### Artworks with the Most Views in the Gallery at the Fogg Museum
 
 ```{r inperson views table}
 # Make a table that shows how many in-person views an item has had since 2009 (total study center views + total moves)
@@ -217,11 +231,13 @@ inperson_table %>%
          personculture,
          inperson_views) %>% 
   arrange(desc(inperson_views)) %>% 
+  slice(1:10) %>% 
   kableExtra::kable(col.names = c("Object Title",
                                   "Artwork Medium",
                                   "Artist",
                                   "Artist's Nationality",
-                                  "Total In-Person Views"))
+                                  "Total In-Person Views")) %>% 
+  kableExtra::kable_styling("striped", full_width = F)
 
 ```
 
