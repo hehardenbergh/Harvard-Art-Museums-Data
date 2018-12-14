@@ -5,7 +5,7 @@ This Shiny App looks at possible relationships between artists' nationalities an
 
 ## Summary
 
-This project was spurred by my interest in which types of artworks the Fogg Museum exhibits more frequently. My passion for art has 
+This project was spurred by my interest in which types of artworks the Fogg Museum exhibits more frequently.  This project visualizes how often different artworks have been viewed by taking a look at the artists' nationalities. In short, there are no strong relationships between an artist's nationality (generalized to continents in the app for ease of view) and the amount of times their work has been viewed in the last ten years. However, it is interesting to look at the large ranges between the minimum and maximum times an object has been viewed, both online and in the gallery, as object activity ranges from zero times to over 2,000 online page visits, and from 2 to 132 in the Modern and Contemporary gallery rooms. In addition, I have included the number of times an object has been requested for view in the 4th floor study center.
 
 
 ## Data Information
